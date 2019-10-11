@@ -21,6 +21,10 @@ Have not yet been visited.
 
 ## Mockup
 Map displaying the paths and current positions of the users.
+<<<<<<< HEAD
 ![alt text](https://github.com/UPEI-Android-2018/group-projects-2019-carlos-edgar/mockups/m1.png "Tracing position")
+=======
+![alt text](https://github.com/UPEI-Android-2018/group-projects-2019-carlos-edgar/mockups/m1.png"Tracing position")
+>>>>>>> c975915c962d1d4cc0ec23961e611f7a61361195
 
 

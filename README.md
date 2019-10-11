@@ -19,3 +19,8 @@ Have not yet been visited.
 5. Provides users with settings to adjust GPS/search parameters. (EX. time b/w pings, search radius)
 6. Function to insert pin on location with details included.
 
+## Mockup
+Map displaying the paths and current positions of the users.
+![alt text](https://github.com/UPEI-Android-2018/group-projects-2019-carlos-edgar/mockups/m1.png "Tracing position")
+
+

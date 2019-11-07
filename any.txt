@@ -1,0 +1,24 @@
+Considerations and special cases to take into account.
+
+Did all members must have been add to the party before starting the tracing?
+If not, what will happen when someone attempts to join in the middle?
+
+How will the tracing process is going to work?
+    What are the initial conditions to start tracing?
+    --> All members must have been added before start tracing the routes.
+    --> It should be internet connection (obviously)
+    startTracing();
+        1. The server will start the tracing.
+        2. All members should be informed of this and the app UI properly updated.
+        3. If connection keeps alive and tracing active.
+            3.1 User: Send user location data to server. 
+                   sendLocation(Location l);
+            3.2 Server: Receive user location, Get info of the status of every other member and its current location.
+            
+ What data does the map need to start drawing paths or routes?
+What information about the party do members need to know at every moment?
+
+
+
+
+

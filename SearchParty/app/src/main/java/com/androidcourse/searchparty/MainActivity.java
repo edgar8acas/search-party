@@ -1,7 +1,9 @@
 package com.androidcourse.searchparty;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,6 +11,9 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -28,15 +33,19 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private Polyline route;
+    private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 8;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
     }
 
     /*public void genLatLng(View view){
@@ -64,29 +73,47 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
         mMap = googleMap;
         final Handler handler = new Handler();
-        final LocationUpdaterBackground task = new LocationUpdaterBackground(this);
-        handler.post(new Runnable(){
-            @Override
-            public void run() {
-                task.execute();
-                handler.postDelayed(this, 60000);
-            }
-        });
 
+        //Check if there's permission to Access Fine Location
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            //If permission is not granted, request permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
+        } else {
+            Log.d("PERMISSION=>", "GRANTED");
+            handler.post(new Runnable(){
+                @Override
+                public void run() {
+                    LocationUpdaterBackground task = getTask();
+                    task.execute();
+                    handler.postDelayed(this, 2000);
+                }
+            });
+        }
+
+
+    }
+
+    public LocationUpdaterBackground getTask(){
+        return new LocationUpdaterBackground(this);
     }
 
     public void updateMap(Location l){
         double lat = l.getLatitude();
         double lng = l.getLongitude();
-
+        Log.d("LAT=>", ""+lat);
+        Log.d("LON=>", ""+lng);
         LatLng location = new LatLng(lat,lng);
         if(route == null){
             route = mMap.addPolyline(new PolylineOptions()
                     .clickable(false)
                     .add(location));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location,15));
         }
         else{
             List<LatLng> points = route.getPoints();
@@ -98,5 +125,18 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     public Activity getActivity(){
         return this;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION:
+                if(grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                }
+        }
     }
 }

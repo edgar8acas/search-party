@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "533327914814",
+    "firebase_url": "https://acoustic-welder-255621.firebaseio.com",
+    "project_id": "acoustic-welder-255621",
+    "storage_bucket": "acoustic-welder-255621.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:533327914814:android:4b770f49f7de02612eee6f",
+        "android_client_info": {
+          "package_name": "com.androidcourse.searchparty"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "533327914814-8lr3tteq8j71qbpi7ch187l2dm4po2m1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.androidcourse.searchparty",
+            "certificate_hash": "b9cbfa6f41ea87499f954abd46f438f0fb4e0ca7"
+          }
+        },
+        {
+          "client_id": "533327914814-f83em0uq5hjm1hqm83qcp58joqmsknp4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCihdpU6GQm3Gh3NrCQzfZn3O5CwAG_C-g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "533327914814-f83em0uq5hjm1hqm83qcp58joqmsknp4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">SearchParty</string>
     <string name="title_activity_maps">Map</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="action_signin">Sign in</string>
+    <string name="action_signup">Sign up</string>
+    <string name="title">Search Party</string>
+    <string name="title_activity_party_list">Parties</string>
+    <string name="title_menu_sign_out">Sign out</string>
 </resources>

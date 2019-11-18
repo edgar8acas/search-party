@@ -1,12 +1,10 @@
 package com.androidcourse.searchparty;
 
 import android.app.Activity;
-import android.content.Context;
 import android.location.Location;
 import android.os.AsyncTask;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -14,7 +12,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.lang.ref.WeakReference;
-import java.util.Random;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -40,8 +37,7 @@ public class LocationUpdaterBackground extends AsyncTask<Long, Void, Location> i
     protected Location doInBackground(Long... longs) {
         lock.lock();
 
-        try{
-
+        try {
             fusedLocationClient.getLastLocation()
                     .addOnSuccessListener(activity, this)
                     .addOnFailureListener(activity, new OnFailureListener() {

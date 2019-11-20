@@ -2,14 +2,12 @@ package com.androidcourse.searchparty;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -22,6 +20,9 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.List;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, LocationUpdate {
@@ -29,9 +30,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private GoogleMap mMap;
     private Polyline route;
     private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 8;
+    private DocumentReference searchParty;
+    private FirebaseFirestore ff = FirebaseFirestore.getInstance();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Intent i = getIntent();
+        String ref = i.getStringExtra("REF");
+        searchParty = ff.collection("parties").document(ref);
+        Log.d("Search Party Ref", searchParty.getId());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.

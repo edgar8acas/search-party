@@ -3,20 +3,28 @@ package com.androidcourse.searchparty;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
-public class PartyListActivity extends AppCompatActivity {
+
+
+public class PartyListActivity extends AppCompatActivity implements PartyCreator.PartyCreatorListener {
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore ff = FirebaseFirestore.getInstance();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,8 +47,10 @@ public class PartyListActivity extends AppCompatActivity {
     }
 
     public void onGoToMap(View view) {
-        startActivity(new Intent(this, MapActivity.class));
+        PartyCreator newParty = new PartyCreator(this);
+        newParty.execute(ff);
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -59,5 +69,12 @@ public class PartyListActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void startParty(String s) {
+        Intent i = new Intent(this, MapActivity.class);
+        i.putExtra("REF", s);
+        startActivity(i);
     }
 }

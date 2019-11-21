@@ -30,9 +30,6 @@ public class PartyCreator extends AsyncTask<FirebaseFirestore, Void, String> {
         try{
             Map<String, Object> party = new HashMap<>();
             party.put("created at", new Timestamp(new Date()));
-            Map<String, Object> users = new HashMap<>();
-            users.put(FirebaseAuth.getInstance().getCurrentUser().getUid(), new HashMap<String, Object>());
-            party.put("users", users);
             Task<DocumentReference> searchParty = ff[0].collection("parties").add(party);
             DocumentReference searchPartyRef = Tasks.await(searchParty);
             return searchPartyRef.getId();

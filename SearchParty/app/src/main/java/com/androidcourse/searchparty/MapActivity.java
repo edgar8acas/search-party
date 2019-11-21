@@ -20,9 +20,13 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, LocationUpdate {
@@ -32,7 +36,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 8;
     private DocumentReference searchParty;
     private FirebaseFirestore ff = FirebaseFirestore.getInstance();
-
+    private CollectionReference users;
+    private DocumentReference localUserLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +45,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         String ref = i.getStringExtra("REF");
         searchParty = ff.collection("parties").document(ref);
         Log.d("Search Party Ref", searchParty.getId());
+        /*Log.d("userLocations Ref", users.getId());*/
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -89,7 +95,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 @Override
                 public void run() {
                     LocationUpdaterBackground task = getTask();
-                    task.execute();
+                    task.execute(searchParty);
                     handler.postDelayed(this, 2000);
                 }
             });

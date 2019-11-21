@@ -8,15 +8,21 @@ import androidx.annotation.NonNull;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class LocationUpdaterBackground extends AsyncTask<Long, Void, Location> implements OnSuccessListener<Location>{
+public class LocationUpdaterBackground extends AsyncTask<DocumentReference, Void, Location> implements OnSuccessListener<Location>{
 
     private WeakReference<LocationUpdate> listener;
     private Activity activity;
@@ -34,7 +40,7 @@ public class LocationUpdaterBackground extends AsyncTask<Long, Void, Location> i
     }
 
     @Override
-    protected Location doInBackground(Long... longs) {
+    protected Location doInBackground(DocumentReference... docs) {
         lock.lock();
 
         try {
@@ -49,6 +55,13 @@ public class LocationUpdaterBackground extends AsyncTask<Long, Void, Location> i
             while (location == null) {
                 locationCondition.await();
             }
+            FirebaseFirestore ff = FirebaseFirestore.getInstance();
+            ff.collection("parties")
+                    .document(docs[0].getId())
+                    .collection("users")
+                    .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                    .collection("userLocations")
+                    .add(new LatLng(location.getLatitude(), location.getLongitude()));
             return location;
         } catch (InterruptedException e){
             e.printStackTrace();

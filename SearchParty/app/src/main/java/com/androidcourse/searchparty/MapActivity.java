@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -20,32 +21,69 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.MetadataChanges;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, LocationUpdate {
 
     private GoogleMap mMap;
-    private Polyline route;
+    private Map<String, Polyline> routes;
     private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 8;
     private DocumentReference searchParty;
     private FirebaseFirestore ff = FirebaseFirestore.getInstance();
-    private CollectionReference users;
-    private DocumentReference localUserLocation;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Intent i = getIntent();
         String ref = i.getStringExtra("REF");
         searchParty = ff.collection("parties").document(ref);
+        DocumentReference refUser = ff.collection("parties")
+                .document(searchParty.getId())
+                .collection("users")
+                .document(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        refUser.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>(){
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    DocumentSnapshot d = task.getResult();
+                    if(!d.exists()){
+                        HashMap<String, Object> initData = new HashMap<>();
+                        initData.put("Created at", new Timestamp(new Date()));
+                        ff.collection("parties")
+                                .document(searchParty.getId())
+                                .collection("users")
+                                .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                .set(initData);
+                    }
+                    else{
+                        Log.d("Doc exists with id: ", d.getId());
+                    }
+                }
+            }
+        });
         Log.d("Search Party Ref", searchParty.getId());
-        /*Log.d("userLocations Ref", users.getId());*/
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -53,19 +91,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
-
-    /*public void genLatLng(View view){
-        Random r = new Random();
-
-        double lat = (r.nextDouble() * 360) - 180;
-        double lng = (r.nextDouble() * 360) - 180;
-
-        Log.d("Latitude: ", "" + lat);
-        Log.d("Longitude: ", "" + lng);
-
-
-        updateMap(new LatLng(lat,lng));
-    }*/
 
 
     /**
@@ -80,8 +105,34 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        final Handler handler = new Handler();
+        ff.collection("parties")
+                .document(searchParty.getId())
+                .collection("users").addSnapshotListener(MetadataChanges.INCLUDE,new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                        if(e != null){
+                            Log.d("listen:error", e.toString());
+                            return;
+                        }
+                        for(DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()){
+                            switch (dc.getType()){
+                                case ADDED:
+                                    Log.d("New location added: ", dc.getDocument().getData().toString());
+                                    updateMap(prepareMapUpdate(dc));
+                                    break;
+                                case MODIFIED:
+                                    Log.d("New location Modified: ", dc.getDocument().getData().toString());
+                                    updateMap(prepareMapUpdate(dc));
+                                    break;
+                                case REMOVED:
+                                    Log.d("New location Removed: ", dc.getDocument().getData().toString());
+                                    break;
+                            }
+                        }
 
+                    }
+                });
+        final Handler handler = new Handler();
         //Check if there's permission to Access Fine Location
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -96,7 +147,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 public void run() {
                     LocationUpdaterBackground task = getTask();
                     task.execute(searchParty);
-                    handler.postDelayed(this, 2000);
+                    handler.postDelayed(this, 30000);
                 }
             });
         }
@@ -106,28 +157,65 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         return new LocationUpdaterBackground(this);
     }
 
-    public void updateMap(Location l){
-        double lat = l.getLatitude();
-        double lng = l.getLongitude();
-        Log.d("LAT=>", ""+lat);
-        Log.d("LON=>", ""+lng);
-        LatLng location = new LatLng(lat,lng);
-        if(route == null){
-            route = mMap.addPolyline(new PolylineOptions()
-                    .clickable(false)
-                    .add(location));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location,15));
-        }
-        else{
-            List<LatLng> points = route.getPoints();
-            points.add(location);
-            route.setPoints(points);
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+    public void updateMap(Map<String, ArrayList<LatLng>> mapUpdate){
+        if(routes == null){routes = new HashMap<>();}
+        for(String user : mapUpdate.keySet()){
+            ArrayList<LatLng> locations = mapUpdate.get(user);
+            for(LatLng location : locations){
+                Log.d("LAT=>", ""+location.latitude);
+                Log.d("LON=>", ""+location.longitude);
+                if(user == FirebaseAuth.getInstance().getCurrentUser().getUid()){
+                    if(routes.get(user) == null){
+                        routes.put(user,mMap.addPolyline(new PolylineOptions()
+                                .clickable(false)
+                                .add(location)));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+                    }
+                    else{
+                        List<LatLng> points = routes.get(user).getPoints();
+                        points.add(location);
+                        routes.get(user).setPoints(points);
+                    }
+                }
+                else{
+                    if(routes.get(user) == null){
+                        routes.put(user,mMap.addPolyline(new PolylineOptions()
+                                .clickable(false)
+                                .add(location)));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+                    }
+                    else{
+                        List<LatLng> points = routes.get(user).getPoints();
+                        points.add(location);
+                        routes.get(user).setPoints(points);
+                    }
+                }
+            }
         }
     }
 
     public Activity getActivity(){
         return this;
+    }
+
+    public HashMap<String, ArrayList<LatLng>> prepareMapUpdate(DocumentChange dc){
+        Map<String, Object> serverData = dc.getDocument().getData();
+        ArrayList<String> keys = new ArrayList(serverData.keySet());
+        Collections.sort(keys, Collections.reverseOrder());
+        ArrayList<LatLng> userLocations = new ArrayList<>();
+        for(String key : keys){
+            try{
+                Map<String, Object> latLngMap =  (HashMap) serverData.get(key);
+                LatLng latLng = new LatLng((double)latLngMap.get("latitude"), (double)latLngMap.get("longitude"));
+                userLocations.add(latLng);
+            }
+            catch(ClassCastException er){
+                Log.d("Timestamp reached", er.toString());
+            }
+        }
+        HashMap<String, ArrayList<LatLng>> mapUpdate = new HashMap<>();
+        mapUpdate.put(FirebaseAuth.getInstance().getCurrentUser().getUid(),userLocations);
+        return mapUpdate;
     }
 
     @Override

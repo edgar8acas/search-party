@@ -8,8 +8,11 @@ import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
+import java.util.Map;
+
 public interface LocationUpdate {
-    void updateMap(Location location);
+    void updateMap(Map<String, ArrayList<LatLng>> mapUpdate);
 
     Activity getActivity();
 }

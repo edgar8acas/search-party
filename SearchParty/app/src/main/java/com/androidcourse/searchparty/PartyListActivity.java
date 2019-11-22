@@ -53,7 +53,7 @@ public class PartyListActivity extends AppCompatActivity implements PartyCreator
 
     public void joinParty(View view){
         Intent i = new Intent(this, MapActivity.class);
-        i.putExtra("REF", "1uNLYQDSjWOYABtlexty");
+        i.putExtra("REF", "t3SmCxTEfT9zwqXDrhNa");
         startActivity(i);
     }
 

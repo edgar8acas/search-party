@@ -13,11 +13,15 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.lang.ref.WeakReference;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -56,12 +60,13 @@ public class LocationUpdaterBackground extends AsyncTask<DocumentReference, Void
                 locationCondition.await();
             }
             FirebaseFirestore ff = FirebaseFirestore.getInstance();
+            Map<String, Object> doc = new HashMap<>();
+            doc.put(new Timestamp(new Date()).toString(),new LatLng(location.getLatitude(), location.getLongitude()));
             ff.collection("parties")
                     .document(docs[0].getId())
                     .collection("users")
                     .document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                    .collection("userLocations")
-                    .add(new LatLng(location.getLatitude(), location.getLongitude()));
+                    .update(doc);
             return location;
         } catch (InterruptedException e){
             e.printStackTrace();
@@ -73,7 +78,7 @@ public class LocationUpdaterBackground extends AsyncTask<DocumentReference, Void
 
     @Override
     protected void onPostExecute(Location l){
-        listener.get().updateMap(l);
+        //listener.get().updateMap(l);
     }
 
     @Override

@@ -5,4 +5,13 @@
         android:id="@+id/menu_sign_out"
         android:title="@string/title_menu_sign_out"
         app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/menu_add_random_party"
+        android:title="@string/title_menu_add_random_party"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/menu_add_party"
+        android:title="@string/title_menu_add_party"/>
 </menu>

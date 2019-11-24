@@ -7,14 +7,14 @@ import androidx.room.Query;
 
 import java.util.List;
 
-@Dao
+//@Dao
 public interface PartyDao {
-    @Query("SELECT * FROM parties")
+    //@Query("SELECT * FROM parties")
     List<Party> getAll();
 
-    @Insert
+    //@Insert
     void insertAll(Party... parties);
 
-    @Delete
+    //@Delete
     void delete(Party party);
 }

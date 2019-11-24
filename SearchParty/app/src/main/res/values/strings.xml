@@ -8,4 +8,14 @@
     <string name="title">Search Party</string>
     <string name="title_activity_party_list">Parties</string>
     <string name="title_menu_sign_out">Sign out</string>
+    <string name="title_menu_add_random_party">Add random party</string>
+    <string name="description_add_party_fab">Add party</string>
+    <string name="title_menu_add_party">Add party</string>
+    <string name="hint_invitation_code">Enter invitation code for people to join</string>
+    <string name="hint_name">Enter name of the new party</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hint_display_name">Enter username</string>
+    <string name="continue_after_name">Continue</string>
 </resources>

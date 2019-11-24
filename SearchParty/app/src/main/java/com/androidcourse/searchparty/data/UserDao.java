@@ -7,17 +7,17 @@ import androidx.room.Query;
 
 import java.util.List;
 
-@Dao
+//@Dao
 public interface UserDao {
-    @Query("SELECT * FROM users")
+    //@Query("SELECT * FROM users")
     List<User> getAll();
 
-    @Query("SELECT * FROM users WHERE email LIKE :email LIMIT 1")
+    //@Query("SELECT * FROM users WHERE email LIKE :email LIMIT 1")
     User findByEmail(String email);
 
-    @Insert
+    //@Insert
     void insertAll(User... users);
 
-    @Delete
+    //@Delete
     void delete(User user);
 }

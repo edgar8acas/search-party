@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,16 +23,23 @@ import com.androidcourse.searchparty.data.Party;
 import com.androidcourse.searchparty.utils.PartyUtil;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 public class PartyListActivity extends AppCompatActivity
-                                implements AddPartyDialogFragment.AddPartyDialogListener {
+                                implements AddPartyDialogFragment.AddPartyDialogListener, JoinPartyDialogFragment.Listener {
 
+    private static final String TAG = "PartyListActivity";
     private FirebaseFirestore firestore;
     FirebaseUser currentUser;
     private FirebaseAuth auth;
@@ -76,10 +84,9 @@ public class PartyListActivity extends AppCompatActivity
         startActivity(new Intent(this, AuthActivity.class));
     }
 
-    private void onAddRandomPartyClicked() {
-        CollectionReference partiesCollection = firestore.collection("parties");
-        Party party = PartyUtil.getRandom();
-        partiesCollection.add(party);
+    private void onJoinParty() {
+        JoinPartyDialogFragment dialog = new JoinPartyDialogFragment();
+        dialog.show(fragmentManager, "Join party");
     }
 
     public void onGoToMap(View view) {
@@ -99,8 +106,8 @@ public class PartyListActivity extends AppCompatActivity
             case R.id.menu_sign_out:
                 onSignOut();
                 return true;
-            case R.id.menu_add_random_party:
-                onAddRandomPartyClicked();
+            case R.id.menu_join_party:
+                onJoinParty();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -152,5 +159,28 @@ public class PartyListActivity extends AppCompatActivity
         Party party = new Party(name, code, currentUser.getUid());
         CollectionReference partiesCollection = firestore.collection("parties");
         partiesCollection.add(party);
+    }
+
+    @Override
+    public void onJoinDialogPositiveClick(final String code) {
+        firestore
+            .collection("parties")
+            .whereEqualTo("invitationCode", code)
+            .limit(1)
+            .get()
+            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if(task.isSuccessful()) {
+                        for(QueryDocumentSnapshot document : task.getResult()) {
+                            document.getReference()
+                                    .update("memberUsers", FieldValue.arrayUnion(currentUser.getUid()));
+                        }
+                    } else {
+                        Log.e(TAG, task.getException().toString());
+                    }
+                }
+            });
+
     }
 }

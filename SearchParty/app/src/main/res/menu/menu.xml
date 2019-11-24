@@ -7,11 +7,7 @@
         app:showAsAction="never"/>
 
     <item
-        android:id="@+id/menu_add_random_party"
-        android:title="@string/title_menu_add_random_party"
-        app:showAsAction="never"/>
-
-    <item
-        android:id="@+id/menu_add_party"
-        android:title="@string/title_menu_add_party"/>
+        android:id="@+id/menu_join_party"
+        android:title="@string/title_menu_join_party"
+        app:showAsAction="ifRoom"/>
 </menu>

@@ -5,4 +5,9 @@
         android:id="@+id/menu_sign_out"
         android:title="@string/title_menu_sign_out"
         app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/menu_join_party"
+        android:title="@string/title_menu_join_party"
+        app:showAsAction="ifRoom"/>
 </menu>

@@ -57,7 +57,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Intent i = getIntent();
-        String ref = i.getStringExtra("REF");
+        String ref = i.getStringExtra(PartyDetailActivity.PARTY_ID);
         searchParty = ff.collection("parties").document(ref);
         DocumentReference refUser = ff.collection("parties")
                 .document(searchParty.getId())
@@ -70,7 +70,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     DocumentSnapshot d = task.getResult();
                     if(!d.exists()){
                         HashMap<String, Object> initData = new HashMap<>();
-                        initData.put("Created at", new Timestamp(new Date()));
+                        initData.put("createdAt", new Timestamp(new Date()));
                         ff.collection("parties")
                                 .document(searchParty.getId())
                                 .collection("users")
@@ -98,8 +98,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
      * This callback is triggered when the map is ready to be used.
      * This is where we can add markers or lines, add listeners or move the camera. In this case,
      * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * If Google Play services is not installed on the device, the currentUser will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the currentUser has
      * installed Google Play services and returned to the app.
      */
     @Override

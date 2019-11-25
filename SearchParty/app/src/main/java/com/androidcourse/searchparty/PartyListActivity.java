@@ -134,6 +134,7 @@ public class PartyListActivity extends AppCompatActivity
                     @Override
                     public void onClick(View view) {
                         Intent intent = new Intent(getApplicationContext(), PartyDetailActivity.class);
+                        intent.putExtra(PartyDetailActivity.PARTY_ID, model.getId());
                         startActivity(intent);
                     }
                 });

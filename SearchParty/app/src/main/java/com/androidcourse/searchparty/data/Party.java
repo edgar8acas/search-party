@@ -5,6 +5,7 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.google.firebase.firestore.DocumentId;
 import com.google.firebase.firestore.ServerTimestamp;
 
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class Party {
         this.memberUsers = memberUsers;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -53,6 +54,10 @@ public class Party {
         this.createdAt = createdAt;
     }
 
+    public String getId() {
+        return id;
+    }
+
     //@Ignore
     public Party(String name, String invitationCode, Date createdAt) {
         this.name = name;
@@ -60,8 +65,8 @@ public class Party {
         this.createdAt = createdAt;
     }
 
-    //@PrimaryKey(autoGenerate = true)
-    private int id;
+    @DocumentId
+    private String id;
 
     //@ColumnInfo(name = "name")
     private String name;
@@ -75,7 +80,7 @@ public class Party {
 
     private List<String> memberUsers;
 
-    public Party(int id, String name, String invitationCode, Date createdAt) {
+    public Party(String id, String name, String invitationCode, Date createdAt) {
         this.id = id;
         this.name = name;
         this.invitationCode = invitationCode;
@@ -92,9 +97,9 @@ public class Party {
 
     public static final ArrayList<Party> parties = new ArrayList<>(
             Arrays.asList(
-                    new Party(1, "Blue party", "ABC123", new Date()),
-                    new Party(2, "Another party", "ABC123", new Date()),
-                    new Party(3, "Another one", "ABC123", new Date())
+                    new Party("1", "Blue party", "ABC123", new Date()),
+                    new Party("2", "Another party", "ABC123", new Date()),
+                    new Party("3", "Another one", "ABC123", new Date())
             )
     );
 

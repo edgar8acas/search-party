@@ -20,4 +20,5 @@
     <string name="continue_after_name">Continue</string>
     <string name="title_menu_join_party">Join party</string>
     <string name="hint_join_code">Enter code to join the party</string>
+    <string name="description_start_map_fab">Start map</string>
 </resources>

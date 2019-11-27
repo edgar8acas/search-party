@@ -5,17 +5,18 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
-import com.google.android.gms.maps.CameraUpdateFactory;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -23,10 +24,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -36,15 +37,11 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.MetadataChanges;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, LocationUpdate {
 
@@ -53,12 +50,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 8;
     private DocumentReference searchParty;
     private FirebaseFirestore ff = FirebaseFirestore.getInstance();
-    private int[] colors = {Color.RED, Color.BLUE, Color.GREEN};
+    public static int[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.MAGENTA, Color.CYAN};
     private int colorCounter = 0;
-
+    private PartyViewerFragment partyViewerFragment;
+    private boolean running;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        running = true;
         Intent i = getIntent();
         String ref = i.getStringExtra(PartyDetailActivity.PARTY_ID);
         searchParty = ff.collection("parties").document(ref);
@@ -88,11 +87,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         });
         Log.d("Search Party Ref", searchParty.getId());
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.map_activity_layout);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        partyViewerFragment = PartyViewerFragment.newInstance();
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.add(R.id.partyViewer, partyViewerFragment).commit();
         mapFragment.getMapAsync(this);
+
     }
 
 
@@ -148,9 +151,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             handler.post(new Runnable(){
                 @Override
                 public void run() {
-                    LocationUpdaterBackground task = getTask();
-                    task.execute(searchParty);
-                    handler.postDelayed(this, 10000);
+                    if(running){
+                        LocationUpdaterBackground task = getTask();
+                        task.execute(searchParty);
+                        handler.postDelayed(this, 10000);
+                    }
                 }
             });
         }
@@ -172,6 +177,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     .color(colors[colorCounter])));
                     routes.get(user).setPoints(locations);
                     colorCounter++;
+                    if(colorCounter >= colors.length){
+                        colorCounter = 0;
+                    }
+                    partyViewerFragment.updateList(user);
                     //mMap.moveCamera(CameraUpdateFactory.newLatLng(locations));
                 }
                 else{
@@ -187,6 +196,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             .color(colors[colorCounter])));
                     colorCounter++;
                     routes.get(user).setPoints(locations);
+                    if(colorCounter >= colors.length){
+                        colorCounter = 0;
+                    }
+                    partyViewerFragment.updateList(user);
                     //mMap.moveCamera(CameraUpdateFactory.newLatLng(locations));
                 }
                 else{
@@ -221,6 +234,26 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         HashMap<String, ArrayList<LatLng>> mapUpdate = new HashMap<>();
         mapUpdate.put(dc.getDocument().getId(),userLocations);
         return mapUpdate;
+    }
+
+    public void onClick(View view){
+        if(running){
+            running = false;
+        }
+        else{
+            running = true;
+            final Handler handler = new Handler();
+            handler.post(new Runnable(){
+                @Override
+                public void run() {
+                    if(running){
+                        LocationUpdaterBackground task = getTask();
+                        task.execute(searchParty);
+                        handler.postDelayed(this, 10000);
+                    }
+                }
+            });
+        }
     }
 
     @Override

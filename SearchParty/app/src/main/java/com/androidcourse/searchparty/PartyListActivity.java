@@ -38,6 +38,9 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class PartyListActivity extends AppCompatActivity
                                 implements AddPartyDialogFragment.AddPartyDialogListener, JoinPartyDialogFragment.Listener {
 
@@ -61,7 +64,7 @@ public class PartyListActivity extends AppCompatActivity
 
         if(currentUser != null) {
             TextView nameView = (TextView)findViewById(R.id.user_info);
-            nameView.setText("Current currentUser: " + currentUser.getEmail() + "\n" + currentUser.getUid() + "\n" + currentUser.getDisplayName());
+            nameView.setText("" + currentUser.getDisplayName() + "\n" + currentUser.getEmail());
         }
     }
 
@@ -127,8 +130,9 @@ public class PartyListActivity extends AppCompatActivity
             protected void onBindViewHolder(@NonNull final PartyItemHolder holder, int position, @NonNull final Party model) {
                 holder.nameView.setText(model.getName());
                 //TODO: Format creation date and get members of party count;
-                holder.creationView.setText(model.getCreatedAt().toString());
-                holder.membersView.setText("" + model.getMemberUsers().size());
+                SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, HH:mm");
+                holder.creationView.setText(dateFormat.format(model.getCreatedAt()));
+                holder.membersView.setText("" + model.getMemberUsers().size() + " members");
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -52,6 +53,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 8;
     private DocumentReference searchParty;
     private FirebaseFirestore ff = FirebaseFirestore.getInstance();
+    private int[] colors = {Color.RED, Color.BLUE, Color.GREEN};
+    private int colorCounter = 0;
 
 
     @Override
@@ -147,7 +150,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 public void run() {
                     LocationUpdaterBackground task = getTask();
                     task.execute(searchParty);
-                    handler.postDelayed(this, 30000);
+                    handler.postDelayed(this, 10000);
                 }
             });
         }
@@ -161,36 +164,38 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         if(routes == null){routes = new HashMap<>();}
         for(String user : mapUpdate.keySet()){
             ArrayList<LatLng> locations = mapUpdate.get(user);
-            for(LatLng location : locations){
-                Log.d("LAT=>", ""+location.latitude);
-                Log.d("LON=>", ""+location.longitude);
-                if(user == FirebaseAuth.getInstance().getCurrentUser().getUid()){
-                    if(routes.get(user) == null){
-                        routes.put(user,mMap.addPolyline(new PolylineOptions()
-                                .clickable(false)
-                                .add(location)));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
-                    }
-                    else{
-                        List<LatLng> points = routes.get(user).getPoints();
-                        points.add(location);
-                        routes.get(user).setPoints(points);
-                    }
+
+            if(user == FirebaseAuth.getInstance().getCurrentUser().getUid()){
+                if(routes.get(user) == null){
+                    routes.put(user,mMap.addPolyline(new PolylineOptions()
+                            .clickable(false)
+                    .color(colors[colorCounter])));
+                    routes.get(user).setPoints(locations);
+                    colorCounter++;
+                    //mMap.moveCamera(CameraUpdateFactory.newLatLng(locations));
                 }
                 else{
-                    if(routes.get(user) == null){
-                        routes.put(user,mMap.addPolyline(new PolylineOptions()
-                                .clickable(false)
-                                .add(location)));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
-                    }
-                    else{
-                        List<LatLng> points = routes.get(user).getPoints();
-                        points.add(location);
-                        routes.get(user).setPoints(points);
-                    }
+                    //List<LatLng> points = routes.get(user).getPoints();
+                    //points.add(locations);
+                    routes.get(user).setPoints(locations);
                 }
             }
+            else{
+                if(routes.get(user) == null){
+                    routes.put(user,mMap.addPolyline(new PolylineOptions()
+                            .clickable(false)
+                            .color(colors[colorCounter])));
+                    colorCounter++;
+                    routes.get(user).setPoints(locations);
+                    //mMap.moveCamera(CameraUpdateFactory.newLatLng(locations));
+                }
+                else{
+                    //List<LatLng> points = routes.get(user).getPoints();
+                    //points.add(locations);
+                    routes.get(user).setPoints(locations);
+                }
+            }
+
         }
     }
 
@@ -214,7 +219,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
         }
         HashMap<String, ArrayList<LatLng>> mapUpdate = new HashMap<>();
-        mapUpdate.put(FirebaseAuth.getInstance().getCurrentUser().getUid(),userLocations);
+        mapUpdate.put(dc.getDocument().getId(),userLocations);
         return mapUpdate;
     }
 

@@ -9,16 +9,20 @@
     <TextView
         android:id="@+id/party_item_name"
         android:fontFamily="sans-serif"
-        android:textSize="16sp"
-        android:layout_width="wrap_content"
+        android:textSize="18sp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/colorPrimaryDark"
+        android:layout_marginTop="5dp"
+        android:layout_marginHorizontal="5dp"
         android:text="Search party name"/>
 
     <TextView
         android:id="@+id/party_item_members"
         android:fontFamily="sans-serif"
         android:textSize="14sp"
-        android:textColor="#ff0000"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="5dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/party_item_name"
@@ -27,10 +31,11 @@
     <TextView
         android:id="@+id/party_item_creation_date"
         android:fontFamily="sans-serif"
-        android:textSize="12sp"
-        android:textColor="#ff0000"
+        android:textSize="14sp"
+        android:layout_marginRight="5dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
+        android:layout_below="@id/party_item_name"
         android:text="03 Nov" />
 </RelativeLayout>

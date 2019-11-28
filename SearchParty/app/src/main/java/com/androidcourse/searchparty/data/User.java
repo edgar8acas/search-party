@@ -1,18 +1,51 @@
 package com.androidcourse.searchparty.data;
 
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
+import com.google.firebase.firestore.DocumentId;
 
-@Entity(tableName = "users")
+//@Entity(tableName = "users")
 public class User {
 
-    @PrimaryKey(autoGenerate = true)
-    public int id;
+    @DocumentId
+    public String id;
 
-    @ColumnInfo(name = "email")
     public String email;
 
-    @ColumnInfo(name = "password")
-    public String password;
+    public String name;
+
+    public int color;
+
+    public User() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
+    }
 }

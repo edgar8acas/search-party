@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 
 import androidx.annotation.NonNull;
 
+import com.androidcourse.searchparty.utils.LocationUtil;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
@@ -34,6 +35,8 @@ public class LocationUpdaterBackground extends AsyncTask<DocumentReference, Void
     private Location location;
     private Lock lock;
     private Condition locationCondition;
+    private LocationUtil util;
+    private LocationUtil.Location loc;
 
     protected LocationUpdaterBackground(LocationUpdate delegate){
         this.listener = new WeakReference<>(delegate);
@@ -41,6 +44,7 @@ public class LocationUpdaterBackground extends AsyncTask<DocumentReference, Void
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(listener.get().getActivity());
         lock = new ReentrantLock();
         locationCondition = lock.newCondition();
+        util = new LocationUtil();
     }
 
     @Override
@@ -61,7 +65,8 @@ public class LocationUpdaterBackground extends AsyncTask<DocumentReference, Void
             }
             FirebaseFirestore ff = FirebaseFirestore.getInstance();
             Map<String, Object> doc = new HashMap<>();
-            doc.put(new Timestamp(new Date()).toString(),new LatLng(location.getLatitude(), location.getLongitude()));
+            loc = util.generateNewLocation();
+            doc.put(new Timestamp(new Date()).toString(),new LatLng(loc.getLat(), loc.getLong()));
             ff.collection("parties")
                     .document(docs[0].getId())
                     .collection("users")

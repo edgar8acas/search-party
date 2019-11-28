@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.androidcourse.searchparty.data.User;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -52,8 +53,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private FirebaseFirestore ff = FirebaseFirestore.getInstance();
     public static int[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.MAGENTA, Color.CYAN};
     private int colorCounter = 0;
-    private PartyViewerFragment partyViewerFragment;
     private boolean running;
+    PartyDetailFragment detailFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,9 +92,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        partyViewerFragment = PartyViewerFragment.newInstance();
+        detailFragment = new PartyDetailFragment();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.add(R.id.partyViewer, partyViewerFragment).commit();
+        ft.add(R.id.partyViewer, detailFragment).commit();
         mapFragment.getMapAsync(this);
 
     }
@@ -176,11 +177,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             .clickable(false)
                     .color(colors[colorCounter])));
                     routes.get(user).setPoints(locations);
-                    colorCounter++;
                     if(colorCounter >= colors.length){
                         colorCounter = 0;
                     }
-                    partyViewerFragment.updateList(user);
+                    addUserToList(user, colors[colorCounter]);
+                    colorCounter++;
                     //mMap.moveCamera(CameraUpdateFactory.newLatLng(locations));
                 }
                 else{
@@ -194,12 +195,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     routes.put(user,mMap.addPolyline(new PolylineOptions()
                             .clickable(false)
                             .color(colors[colorCounter])));
-                    colorCounter++;
                     routes.get(user).setPoints(locations);
                     if(colorCounter >= colors.length){
                         colorCounter = 0;
                     }
-                    partyViewerFragment.updateList(user);
+                    addUserToList(user, colors[colorCounter]);
+                    colorCounter++;
                     //mMap.moveCamera(CameraUpdateFactory.newLatLng(locations));
                 }
                 else{
@@ -210,6 +211,17 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
 
         }
+    }
+
+    public void addUserToList(String user, final int color) {
+        ff.collection("users").document(user).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                User user = documentSnapshot.toObject(User.class);
+                user.setColor(color);
+                detailFragment.addUser(user);
+            }
+        });
     }
 
     public Activity getActivity(){

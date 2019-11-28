@@ -12,17 +12,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.androidcourse.searchparty.R;
-import com.androidcourse.searchparty.adapters.UserAdapter;
+import com.androidcourse.searchparty.adapters.UsersAdapter;
 import com.androidcourse.searchparty.data.User;
-import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,6 +31,7 @@ public class PartyDetailFragment extends Fragment {
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private List<String> memberUsersList;
+    private UsersAdapter usersAdapter;
     public PartyDetailFragment() {
         // Required empty public constructor
     }
@@ -51,27 +49,13 @@ public class PartyDetailFragment extends Fragment {
         layoutManager = new LinearLayoutManager(getContext());
         recyclerView = view.findViewById(R.id.users_recycler_view);
         recyclerView.setLayoutManager(layoutManager);
-        UserAdapter adapter = new UserAdapter(getMembersInfo());
-        recyclerView.setAdapter(adapter);
+        usersAdapter = new UsersAdapter();
+        recyclerView.setAdapter(usersAdapter);
         return view;
     }
 
-    private List<User> getMembersInfo() {
-        final ArrayList<User> members = new ArrayList<>();
-        for (String uid:
-             memberUsersList) {
-            DocumentReference docRef = firestore.collection("users").document(uid);
-            docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if(task.isSuccessful()) {
-                        User user = task.getResult().toObject(User.class);
-                        members.add(user);
-                    }
-                }
-            });
-        }
-        return members;
+    public void addUser(User user) {
+        usersAdapter.addUser(user);
+        usersAdapter.notifyDataSetChanged();
     }
-
 }

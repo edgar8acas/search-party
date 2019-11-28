@@ -12,6 +12,8 @@ public class User {
 
     public String name;
 
+    public int color;
+
     public User() {
     }
 
@@ -37,5 +39,13 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 }

@@ -10,14 +10,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.androidcourse.searchparty.R;
 import com.androidcourse.searchparty.data.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class UserAdapter extends RecyclerView.Adapter<UserItemHolder> {
+public class UsersAdapter extends RecyclerView.Adapter<UserItemHolder> {
 
     private List<User> members;
 
-    public UserAdapter(List<User> members) {
-        this.members = members;
+    public UsersAdapter() {
+        this.members = new ArrayList<>();
     }
 
     @NonNull
@@ -32,10 +33,17 @@ public class UserAdapter extends RecyclerView.Adapter<UserItemHolder> {
     public void onBindViewHolder(@NonNull UserItemHolder holder, int position) {
         User user = members.get(position);
         holder.nameView.setText(user.getName());
+        if(user.getColor() != -1) {
+            holder.nameView.setTextColor(user.getColor());
+        }
     }
 
     @Override
     public int getItemCount() {
         return members.size();
+    }
+
+    public void addUser(User user) {
+        members.add(user);
     }
 }

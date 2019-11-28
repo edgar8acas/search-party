@@ -34,10 +34,10 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/description_start_map_fab"
         android:onClick="onClick"
-        android:src="@drawable/baseline_play_arrow_white_24"
+        android:src="@drawable/baseline_stop_white_24"
         app:layout_constraintBottom_toTopOf="@+id/partyViewer"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.921"
+        app:layout_constraintHorizontal_bias="0.979"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/map"
         app:layout_constraintVertical_bias="0.969" />

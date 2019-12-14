@@ -4,17 +4,20 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
-import com.google.android.gms.maps.CameraUpdateFactory;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.androidcourse.searchparty.data.User;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -22,10 +25,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -35,15 +38,11 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.MetadataChanges;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, LocationUpdate {
 
@@ -52,12 +51,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private static final int MY_PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 8;
     private DocumentReference searchParty;
     private FirebaseFirestore ff = FirebaseFirestore.getInstance();
-
+    public static int[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.MAGENTA, Color.CYAN};
+    private int colorCounter = 0;
+    private boolean running;
+    PartyDetailFragment detailFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        running = true;
         Intent i = getIntent();
-        String ref = i.getStringExtra("REF");
+        String ref = i.getStringExtra(PartyDetailActivity.PARTY_ID);
         searchParty = ff.collection("parties").document(ref);
         DocumentReference refUser = ff.collection("parties")
                 .document(searchParty.getId())
@@ -70,7 +73,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     DocumentSnapshot d = task.getResult();
                     if(!d.exists()){
                         HashMap<String, Object> initData = new HashMap<>();
-                        initData.put("Created at", new Timestamp(new Date()));
+                        initData.put("createdAt", new Timestamp(new Date()));
                         ff.collection("parties")
                                 .document(searchParty.getId())
                                 .collection("users")
@@ -85,11 +88,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         });
         Log.d("Search Party Ref", searchParty.getId());
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.map_activity_layout);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        detailFragment = new PartyDetailFragment();
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.add(R.id.partyViewer, detailFragment).commit();
         mapFragment.getMapAsync(this);
+
     }
 
 
@@ -98,8 +105,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
      * This callback is triggered when the map is ready to be used.
      * This is where we can add markers or lines, add listeners or move the camera. In this case,
      * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * If Google Play services is not installed on the device, the currentUser will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the currentUser has
      * installed Google Play services and returned to the app.
      */
     @Override
@@ -145,9 +152,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             handler.post(new Runnable(){
                 @Override
                 public void run() {
-                    LocationUpdaterBackground task = getTask();
-                    task.execute(searchParty);
-                    handler.postDelayed(this, 30000);
+                    if(running){
+                        LocationUpdaterBackground task = getTask();
+                        task.execute(searchParty);
+                        handler.postDelayed(this, 10000);
+                    }
                 }
             });
         }
@@ -161,37 +170,58 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         if(routes == null){routes = new HashMap<>();}
         for(String user : mapUpdate.keySet()){
             ArrayList<LatLng> locations = mapUpdate.get(user);
-            for(LatLng location : locations){
-                Log.d("LAT=>", ""+location.latitude);
-                Log.d("LON=>", ""+location.longitude);
-                if(user == FirebaseAuth.getInstance().getCurrentUser().getUid()){
-                    if(routes.get(user) == null){
-                        routes.put(user,mMap.addPolyline(new PolylineOptions()
-                                .clickable(false)
-                                .add(location)));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+
+            if(user == FirebaseAuth.getInstance().getCurrentUser().getUid()){
+                if(routes.get(user) == null){
+                    routes.put(user,mMap.addPolyline(new PolylineOptions()
+                            .clickable(false)
+                    .color(colors[colorCounter])));
+                    routes.get(user).setPoints(locations);
+                    if(colorCounter >= colors.length){
+                        colorCounter = 0;
                     }
-                    else{
-                        List<LatLng> points = routes.get(user).getPoints();
-                        points.add(location);
-                        routes.get(user).setPoints(points);
-                    }
+                    addUserToList(user, colors[colorCounter]);
+                    colorCounter++;
+                    //mMap.moveCamera(CameraUpdateFactory.newLatLng(locations));
                 }
                 else{
-                    if(routes.get(user) == null){
-                        routes.put(user,mMap.addPolyline(new PolylineOptions()
-                                .clickable(false)
-                                .add(location)));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
-                    }
-                    else{
-                        List<LatLng> points = routes.get(user).getPoints();
-                        points.add(location);
-                        routes.get(user).setPoints(points);
-                    }
+                    //List<LatLng> points = routes.get(user).getPoints();
+                    //points.add(locations);
+                    routes.get(user).setPoints(locations);
                 }
             }
+            else{
+                if(routes.get(user) == null){
+                    routes.put(user,mMap.addPolyline(new PolylineOptions()
+                            .clickable(false)
+                            .color(colors[colorCounter])));
+                    routes.get(user).setPoints(locations);
+                    if(colorCounter >= colors.length){
+                        colorCounter = 0;
+                    }
+                    addUserToList(user, colors[colorCounter]);
+                    colorCounter++;
+                    //mMap.moveCamera(CameraUpdateFactory.newLatLng(locations));
+                }
+                else{
+                    //List<LatLng> points = routes.get(user).getPoints();
+                    //points.add(locations);
+                    routes.get(user).setPoints(locations);
+                }
+            }
+
         }
+    }
+
+    public void addUserToList(String user, final int color) {
+        ff.collection("users").document(user).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                User user = documentSnapshot.toObject(User.class);
+                user.setColor(color);
+                detailFragment.addUser(user);
+            }
+        });
     }
 
     public Activity getActivity(){
@@ -214,8 +244,28 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
         }
         HashMap<String, ArrayList<LatLng>> mapUpdate = new HashMap<>();
-        mapUpdate.put(FirebaseAuth.getInstance().getCurrentUser().getUid(),userLocations);
+        mapUpdate.put(dc.getDocument().getId(),userLocations);
         return mapUpdate;
+    }
+
+    public void onClick(View view){
+        if(running){
+            running = false;
+        }
+        else{
+            running = true;
+            final Handler handler = new Handler();
+            handler.post(new Runnable(){
+                @Override
+                public void run() {
+                    if(running){
+                        LocationUpdaterBackground task = getTask();
+                        task.execute(searchParty);
+                        handler.postDelayed(this, 10000);
+                    }
+                }
+            });
+        }
     }
 
     @Override
